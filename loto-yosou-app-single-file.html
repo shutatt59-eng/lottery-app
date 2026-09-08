@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+<title>ロト予想アプリ | ロト6・ロト7・ミニロト</title>
+<meta name="description" content="ロト6・ロト7・ミニロトの予想数字をワンタップで作れるスマホ向けアプリ">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@500;700;900&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+/* ==========================================================
+   ロト予想アプリ - スタイル
+   トークン: 深紺ベース + ゲームごとの色分け（金/朱/翡翠）
+   ========================================================== */
+
+:root {
+  --bg-base: #12142B;
+  --bg-surface: #1B1E3C;
+  --bg-surface-raised: #242850;
+  --border-soft: #333863;
+
+  --text-primary: #F5F1E6;
+  --text-muted: #9EA2C7;
+
+  --accent-gold: #E8B94F;      /* ロト6 */
+  --accent-vermilion: #E17A5F; /* ロト7 */
+  --accent-jade: #5FBE9B;      /* ミニロト */
+
+  --radius-card: 20px;
+  --radius-pill: 999px;
+}
+
+body[data-game="loto6"]    { --accent: var(--accent-gold); }
+body[data-game="loto7"]    { --accent: var(--accent-vermilion); }
+body[data-game="miniloto"] { --accent: var(--accent-jade); }
+
+* { box-sizing: border-box; }
+
+html, body { margin: 0; padding: 0; }
+
+body {
+  background: radial-gradient(120% 90% at 50% -10%, #1D2147 0%, var(--bg-base) 55%);
+  color: var(--text-primary);
+  font-family: "Noto Sans JP", "Hiragino Sans", sans-serif;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation-duration: 0.001ms !important; transition-duration: 0.001ms !important; }
+}
+
+.app-header { padding: 32px 20px 12px; text-align: center; }
+
+.app-eyebrow { margin: 0 0 4px; font-size: 13px; color: var(--text-muted); }
+
+.app-title {
+  margin: 0;
+  font-family: "Zen Maru Gothic", "Noto Sans JP", sans-serif;
+  font-weight: 900;
+  font-size: 28px;
+  letter-spacing: 0.02em;
+  color: var(--text-primary);
+}
+
+.app-main {
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 8px 16px 40px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-card);
+  padding: 20px;
+}
+
+.section-title {
+  font-family: "Zen Maru Gothic", sans-serif;
+  font-weight: 700;
+  font-size: 17px;
+  margin: 0 0 14px;
+  color: var(--text-primary);
+}
+
+.game-tabs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+
+.game-tab {
+  appearance: none;
+  border: 1.5px solid var(--border-soft);
+  background: var(--bg-surface);
+  border-radius: 16px;
+  padding: 12px 6px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  cursor: pointer;
+  transition: border-color 0.2s ease, background 0.2s ease;
+}
+
+.game-tab-name { font-family: "Zen Maru Gothic", sans-serif; font-weight: 700; font-size: 15px; color: var(--text-primary); }
+.game-tab-sub { font-size: 12px; color: var(--text-muted); }
+
+.game-tab[aria-selected="true"] { border-color: var(--accent); background: var(--bg-surface-raised); }
+.game-tab[aria-selected="true"] .game-tab-sub { color: var(--accent); font-weight: 700; }
+
+.game-info { padding: 16px 20px; }
+.game-info-text { margin: 0; font-size: 14px; line-height: 1.7; color: var(--text-muted); }
+.game-info-text strong { color: var(--accent); }
+
+.ticket-stepper { display: flex; align-items: center; justify-content: center; gap: 16px; margin-bottom: 18px; }
+.ticket-stepper-label { font-size: 14px; color: var(--text-muted); margin-right: 4px; }
+
+.stepper-btn {
+  width: 44px; height: 44px;
+  border-radius: 50%;
+  border: 1.5px solid var(--border-soft);
+  background: var(--bg-surface-raised);
+  color: var(--text-primary);
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+}
+.stepper-btn:active { border-color: var(--accent); }
+
+.ticket-count { font-family: "Zen Maru Gothic", sans-serif; font-weight: 700; font-size: 22px; min-width: 28px; text-align: center; }
+
+.generate-btn {
+  width: 100%;
+  border: none;
+  border-radius: var(--radius-pill);
+  padding: 16px;
+  font-family: "Zen Maru Gothic", sans-serif;
+  font-weight: 700;
+  font-size: 16px;
+  color: var(--bg-base);
+  background: var(--accent);
+  cursor: pointer;
+  transition: transform 0.15s ease, filter 0.2s ease;
+}
+.generate-btn:active { transform: scale(0.97); }
+
+.result-section { display: flex; flex-direction: column; gap: 12px; }
+
+.ticket-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-card);
+  padding: 16px 16px 18px;
+}
+
+.ticket-label { font-size: 12px; color: var(--text-muted); margin: 0 0 10px; }
+
+.ball-row { display: flex; flex-wrap: wrap; gap: 8px; }
+
+.ball {
+  width: 42px; height: 42px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: var(--bg-base);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: "Zen Maru Gothic", sans-serif;
+  font-weight: 700;
+  font-size: 15px;
+  opacity: 0;
+  transform: scale(0.4);
+  animation: ball-pop 0.42s cubic-bezier(0.2, 0.8, 0.3, 1.2) forwards;
+}
+
+@keyframes ball-pop { to { opacity: 1; transform: scale(1); } }
+
+.history-header { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 2px; }
+
+.text-btn {
+  appearance: none; background: none; border: none;
+  color: var(--text-muted);
+  font-size: 12px;
+  text-decoration: underline;
+  cursor: pointer;
+  padding: 4px;
+}
+
+.history-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+
+.history-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 12px 4px;
+  border-top: 1px solid var(--border-soft);
+}
+.history-item:first-child { border-top: none; }
+
+.history-meta { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.history-tag { font-size: 11px; color: var(--accent); font-weight: 700; }
+.history-numbers { font-size: 14px; color: var(--text-primary); overflow-wrap: anywhere; }
+.history-date { font-size: 11px; color: var(--text-muted); white-space: nowrap; }
+
+.history-right { display: flex; align-items: center; gap: 8px; }
+
+.history-delete {
+  appearance: none; background: none; border: none;
+  color: var(--text-muted);
+  font-size: 18px;
+  cursor: pointer;
+  padding: 4px 6px;
+  flex-shrink: 0;
+}
+
+.history-empty { font-size: 13px; color: var(--text-muted); text-align: center; margin: 12px 0 4px; }
+
+.disclaimer { padding: 4px 12px 0; }
+.disclaimer p { font-size: 11.5px; line-height: 1.8; color: var(--text-muted); text-align: center; margin: 0; }
+</style>
+</head>
+<body data-game="loto6">
+
+  <header class="app-header">
+    <p class="app-eyebrow">数字選びをお手伝い</p>
+    <h1 class="app-title">ロト予想アプリ</h1>
+  </header>
+
+  <main class="app-main">
+
+    <nav class="game-tabs" role="tablist" aria-label="ゲームを選ぶ">
+      <button class="game-tab" data-game="loto6" role="tab" aria-selected="true">
+        <span class="game-tab-name">ロト6</span>
+        <span class="game-tab-sub">6/43</span>
+      </button>
+      <button class="game-tab" data-game="loto7" role="tab" aria-selected="false">
+        <span class="game-tab-name">ロト7</span>
+        <span class="game-tab-sub">7/37</span>
+      </button>
+      <button class="game-tab" data-game="miniloto" role="tab" aria-selected="false">
+        <span class="game-tab-name">ミニロト</span>
+        <span class="game-tab-sub">5/31</span>
+      </button>
+    </nav>
+
+    <section class="game-info card" aria-live="polite">
+      <p id="gameInfoText" class="game-info-text"></p>
+    </section>
+
+    <section class="generate-section card">
+      <h2 class="section-title">予想を作る</h2>
+
+      <div class="ticket-stepper">
+        <span class="ticket-stepper-label">口数</span>
+        <button type="button" id="ticketMinus" class="stepper-btn" aria-label="口数を減らす">−</button>
+        <span id="ticketCount" class="ticket-count" aria-live="polite">3</span>
+        <button type="button" id="ticketPlus" class="stepper-btn" aria-label="口数を増やす">＋</button>
+      </div>
+
+      <button type="button" id="generateBtn" class="generate-btn">
+        予想数字を作る
+      </button>
+    </section>
+
+    <section id="resultSection" class="result-section" aria-live="polite"></section>
+
+    <section class="history-section card">
+      <div class="history-header">
+        <h2 class="section-title">これまでの予想</h2>
+        <button type="button" id="clearHistoryBtn" class="text-btn">履歴を全部消す</button>
+      </div>
+      <ul id="historyList" class="history-list"></ul>
+      <p id="historyEmpty" class="history-empty">まだ予想を作っていません</p>
+    </section>
+
+    <footer class="disclaimer">
+      <p>
+        このアプリが出す数字はすべてランダムに選ばれたものです。当せんを保証するものではなく、過去の抽せん結果が次回に影響することもありません。参考・娯楽としてお楽しみください。
+      </p>
+    </footer>
+
+  </main>
+
+<script>
+(function () {
+  "use strict";
+
+  var GAMES = {
+    loto6: {
+      label: "ロト6",
+      max: 43,
+      pick: 6,
+      desc: "1〜43の数字から<strong>6個</strong>選ぶくじです。ボックス・ミニ数字選択などの買い方がありますが、このアプリではふつうの1口分（6個）を作ります。"
+    },
+    loto7: {
+      label: "ロト7",
+      max: 37,
+      pick: 7,
+      desc: "1〜37の数字から<strong>7個</strong>選ぶくじです。ロトの中でも当せん金が大きくなりやすいのが特徴です。"
+    },
+    miniloto: {
+      label: "ミニロト",
+      max: 31,
+      pick: 5,
+      desc: "1〜31の数字から<strong>5個</strong>選ぶくじです。選ぶ数字が少なく、はじめての方にも選びやすいゲームです。"
+    }
+  };
+
+  var HISTORY_KEY = "loto-yosou-history";
+  var HISTORY_LIMIT = 30;
+
+  var currentGame = "loto6";
+  var ticketCount = 3;
+
+  var bodyEl = document.body;
+  var gameTabs = document.querySelectorAll(".game-tab");
+  var gameInfoText = document.getElementById("gameInfoText");
+  var ticketCountEl = document.getElementById("ticketCount");
+  var ticketMinus = document.getElementById("ticketMinus");
+  var ticketPlus = document.getElementById("ticketPlus");
+  var generateBtn = document.getElementById("generateBtn");
+  var resultSection = document.getElementById("resultSection");
+  var historyList = document.getElementById("historyList");
+  var historyEmpty = document.getElementById("historyEmpty");
+  var clearHistoryBtn = document.getElementById("clearHistoryBtn");
+
+  function pickNumbers(max, pick) {
+    var pool = [];
+    for (var i = 1; i <= max; i++) pool.push(i);
+
+    for (var j = pool.length - 1; j > 0; j--) {
+      var k = Math.floor(Math.random() * (j + 1));
+      var tmp = pool[j];
+      pool[j] = pool[k];
+      pool[k] = tmp;
+    }
+
+    return pool.slice(0, pick).sort(function (a, b) { return a - b; });
+  }
+
+  function renderGameInfo() {
+    var g = GAMES[currentGame];
+    gameInfoText.innerHTML = g.desc;
+  }
+
+  function switchGame(gameKey) {
+    currentGame = gameKey;
+    bodyEl.setAttribute("data-game", gameKey);
+
+    gameTabs.forEach(function (tab) {
+      var isSelected = tab.getAttribute("data-game") === gameKey;
+      tab.setAttribute("aria-selected", String(isSelected));
+    });
+
+    renderGameInfo();
+    resultSection.innerHTML = "";
+  }
+
+  function renderTickets(ticketsData) {
+    resultSection.innerHTML = "";
+
+    ticketsData.forEach(function (numbers, index) {
+      var card = document.createElement("div");
+      card.className = "ticket-card";
+
+      var label = document.createElement("p");
+      label.className = "ticket-label";
+      label.textContent = (index + 1) + "口目";
+      card.appendChild(label);
+
+      var row = document.createElement("div");
+      row.className = "ball-row";
+
+      numbers.forEach(function (num, ballIndex) {
+        var ball = document.createElement("span");
+        ball.className = "ball";
+        ball.textContent = num;
+        ball.style.animationDelay = (ballIndex * 0.05) + "s";
+        row.appendChild(ball);
+      });
+
+      card.appendChild(row);
+      resultSection.appendChild(card);
+    });
+  }
+
+  function loadHistory() {
+    try {
+      var raw = localStorage.getItem(HISTORY_KEY);
+      return raw ? JSON.parse(raw) : [];
+    } catch (e) {
+      return [];
+    }
+  }
+
+  function saveHistory(history) {
+    try {
+      localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
+    } catch (e) {
+      /* localStorageが使えない環境では履歴を保存しない */
+    }
+  }
+
+  function addToHistory(gameKey, ticketsData) {
+    var history = loadHistory();
+    var now = new Date();
+    var dateStr = (now.getMonth() + 1) + "/" + now.getDate() + " " +
+      String(now.getHours()).padStart(2, "0") + ":" + String(now.getMinutes()).padStart(2, "0");
+
+    ticketsData.forEach(function (numbers) {
+      history.unshift({
+        id: now.getTime() + "-" + Math.random().toString(36).slice(2, 8),
+        game: gameKey,
+        numbers: numbers,
+        date: dateStr
+      });
+    });
+
+    var trimmed = history.slice(0, HISTORY_LIMIT);
+    saveHistory(trimmed);
+    renderHistory();
+  }
+
+  function deleteHistoryItem(id) {
+    var history = loadHistory().filter(function (item) { return item.id !== id; });
+    saveHistory(history);
+    renderHistory();
+  }
+
+  function renderHistory() {
+    var history = loadHistory();
+    historyList.innerHTML = "";
+
+    if (history.length === 0) {
+      historyEmpty.style.display = "block";
+      return;
+    }
+    historyEmpty.style.display = "none";
+
+    history.forEach(function (item) {
+      var li = document.createElement("li");
+      li.className = "history-item";
+
+      var meta = document.createElement("div");
+      meta.className = "history-meta";
+
+      var tag = document.createElement("span");
+      tag.className = "history-tag";
+      tag.textContent = (GAMES[item.game] && GAMES[item.game].label) || item.game;
+      meta.appendChild(tag);
+
+      var numbers = document.createElement("span");
+      numbers.className = "history-numbers";
+      numbers.textContent = item.numbers.join(" ・ ");
+      meta.appendChild(numbers);
+
+      var date = document.createElement("span");
+      date.className = "history-date";
+      date.textContent = item.date;
+
+      var deleteBtn = document.createElement("button");
+      deleteBtn.className = "history-delete";
+      deleteBtn.setAttribute("aria-label", "この履歴を削除");
+      deleteBtn.textContent = "×";
+      deleteBtn.addEventListener("click", function () { deleteHistoryItem(item.id); });
+
+      var right = document.createElement("div");
+      right.className = "history-right";
+      right.appendChild(date);
+      right.appendChild(deleteBtn);
+
+      li.appendChild(meta);
+      li.appendChild(right);
+      historyList.appendChild(li);
+    });
+  }
+
+  gameTabs.forEach(function (tab) {
+    tab.addEventListener("click", function () { switchGame(tab.getAttribute("data-game")); });
+  });
+
+  ticketMinus.addEventListener("click", function () {
+    if (ticketCount > 1) {
+      ticketCount -= 1;
+      ticketCountEl.textContent = ticketCount;
+    }
+  });
+
+  ticketPlus.addEventListener("click", function () {
+    if (ticketCount < 5) {
+      ticketCount += 1;
+      ticketCountEl.textContent = ticketCount;
+    }
+  });
+
+  generateBtn.addEventListener("click", function () {
+    var g = GAMES[currentGame];
+    var tickets = [];
+    for (var i = 0; i < ticketCount; i++) {
+      tickets.push(pickNumbers(g.max, g.pick));
+    }
+    renderTickets(tickets);
+    addToHistory(currentGame, tickets);
+  });
+
+  clearHistoryBtn.addEventListener("click", function () {
+    saveHistory([]);
+    renderHistory();
+  });
+
+  renderGameInfo();
+  renderHistory();
+})();
+</script>
+</body>
+</html>
