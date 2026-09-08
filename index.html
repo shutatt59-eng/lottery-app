@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+<title>ロト予想アプリ | ロト6・ロト7・ミニロト</title>
+<meta name="description" content="ロト6・ロト7・ミニロトの予想数字をワンタップで作れるスマホ向けアプリ">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@500;700;900&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body data-game="loto6">
+
+  <header class="app-header">
+    <p class="app-eyebrow">数字選びをお手伝い</p>
+    <h1 class="app-title">ロト予想アプリ</h1>
+  </header>
+
+  <main class="app-main">
+
+    <!-- ゲーム選択タブ -->
+    <nav class="game-tabs" role="tablist" aria-label="ゲームを選ぶ">
+      <button class="game-tab" data-game="loto6" role="tab" aria-selected="true">
+        <span class="game-tab-name">ロト6</span>
+        <span class="game-tab-sub">6/43</span>
+      </button>
+      <button class="game-tab" data-game="loto7" role="tab" aria-selected="false">
+        <span class="game-tab-name">ロト7</span>
+        <span class="game-tab-sub">7/37</span>
+      </button>
+      <button class="game-tab" data-game="miniloto" role="tab" aria-selected="false">
+        <span class="game-tab-name">ミニロト</span>
+        <span class="game-tab-sub">5/31</span>
+      </button>
+    </nav>
+
+    <!-- 選択中ゲームの説明 -->
+    <section class="game-info card" aria-live="polite">
+      <p id="gameInfoText" class="game-info-text"></p>
+    </section>
+
+    <!-- 予想を作る -->
+    <section class="generate-section card">
+      <h2 class="section-title">予想を作る</h2>
+
+      <div class="ticket-stepper">
+        <span class="ticket-stepper-label">口数</span>
+        <button type="button" id="ticketMinus" class="stepper-btn" aria-label="口数を減らす">−</button>
+        <span id="ticketCount" class="ticket-count" aria-live="polite">3</span>
+        <button type="button" id="ticketPlus" class="stepper-btn" aria-label="口数を増やす">＋</button>
+      </div>
+
+      <button type="button" id="generateBtn" class="generate-btn">
+        予想数字を作る
+      </button>
+    </section>
+
+    <!-- 結果表示 -->
+    <section id="resultSection" class="result-section" aria-live="polite"></section>
+
+    <!-- 履歴 -->
+    <section class="history-section card">
+      <div class="history-header">
+        <h2 class="section-title">これまでの予想</h2>
+        <button type="button" id="clearHistoryBtn" class="text-btn">履歴を全部消す</button>
+      </div>
+      <ul id="historyList" class="history-list"></ul>
+      <p id="historyEmpty" class="history-empty">まだ予想を作っていません</p>
+    </section>
+
+    <!-- 注意書き -->
+    <footer class="disclaimer">
+      <p>
+        このアプリが出す数字はすべてランダムに選ばれたものです。当せんを保証するものではなく、過去の抽せん結果が次回に影響することもありません。参考・娯楽としてお楽しみください。
+      </p>
+    </footer>
+
+  </main>
+
+  <script src="js/script.js"></script>
+</body>
+</html>
